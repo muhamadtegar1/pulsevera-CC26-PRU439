@@ -15,7 +15,7 @@
 | Nama Kolom | Tipe | Deskripsi | Nilai Unik / Range | Missing % | Catatan |
 |---|---|---|---|---|---|
 | `Sex` | int | Jenis kelamin responden | 0=Perempuan, 1=Laki-laki | 0% | Encoded dari Male/Female |
-| `AgeCategory` | int | Kategori usia (ordinal) | 1–13 (1=18-24, 13=80+) | 0% | Ordinal encoding dari string |
+| `AgeCategory` | int | Kategori usia (ordinal) | 1=18-24, 2=25-29, 3=30-34, 4=35-39, 5=40-44, 6=45-49, 7=50-54, 8=55-59, 9=60-64, 10=65-69, 11=70-74, 12=75-79, 13=80+ | 0% | Ordinal encoding dari string; interval 5 tahun dari usia 18-79, lalu semua usia 80+ digabung dalam satu bucket |
 | `Race_Black only, Non-Hispanic` | uint8 | Ras: Kulit Hitam (non-Hispanik) | 0, 1 | 0% | One-hot dari RaceEthnicityCategory |
 | `Race_Hispanic` | uint8 | Ras: Hispanik | 0, 1 | 0% | One-hot dari RaceEthnicityCategory |
 | `Race_Multiracial, Non-Hispanic` | uint8 | Ras: Multirasial (non-Hispanik) | 0, 1 | 0% | One-hot dari RaceEthnicityCategory |
