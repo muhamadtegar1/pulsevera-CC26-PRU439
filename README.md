@@ -46,16 +46,40 @@ pulsevera-cc26-pru439/
 ```
 pulsevera-cc26-pru439/
 ├── notebooks/
-│   ├── 01_data_wrangling.ipynb       ← Data Gathering, Assessing, Cleaning
-│   ├── 02_eda.ipynb                  ← EDA + 5 Business Questions
-│   ├── 03_feature_engineering.ipynb  ← 6 Fitur Baru + Train-Test Split
-│   ├── 04_ab_testing.ipynb           ← 4 Hipotesis A/B Testing
-│   └── figures/                      ← 13 visualisasi PNG
+│   ├── 01_data_wrangling.ipynb       ← [DS]  Data Gathering, Assessing, Cleaning
+│   ├── 02_eda.ipynb                  ← [DS]  EDA + 5 Business Questions
+│   ├── 03_feature_engineering.ipynb  ← [DS]  6 Fitur Baru + Train-Test Split
+│   ├── 04_ab_testing.ipynb           ← [DS]  4 Hipotesis A/B Testing
+│   ├── 05_ml_modeling.ipynb          ← [AI]  LR + RF + DT + SMOTE + tuning
+│   ├── 06_deep_learning.ipynb        ← [AI]  TF Functional API + Focal Loss + Custom Callback
+│   ├── 07_evaluation_shap.ipynb      ← [AI]  Evaluasi komprehensif + SHAP + demo inference
+│   └── figures/                      ← Visualisasi PNG (DS + AI)
 ├── dashboard/
-│   └── app.py                        ← Streamlit Dashboard (Data Science)
-├── ml-api/                           ← [AI Engineer] FastAPI inference API
-├── backend/                          ← [Full-Stack] Node.js/Express
-├── frontend/                         ← [Full-Stack] React App
+│   └── app.py                        ← [DS]  Streamlit Dashboard
+├── ml-api/                           ← [AI]  FastAPI inference API
+│   ├── main.py                       ←       FastAPI app + endpoints + Gemini AI
+│   ├── preprocessing.py              ←       10 field → 46 fitur
+│   ├── inference.py                  ←       Model loading + SHAP + recommendations
+│   ├── train.py                      ←       Standalone training pipeline
+│   ├── requirements.txt
+│   ├── .env.example                  ←       Setup Gemini API key
+│   ├── README.md                     ←       Dokumentasi detail ml-api
+│   └── models/                       ←       .pkl / .keras / metadata (gitignored)
+├── backend/                          ← [Full-Stack] Node.js/Express (proxy)
+│   ├── server.js
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── controllers/predictController.js
+│   │   └── routes/predictRoutes.js
+│   └── package.json
+├── frontend/                         ← [Full-Stack] React + Vite + Tailwind
+│   ├── src/
+│   │   ├── App.jsx                   ←       react-router (/, /check-risk, /result)
+│   │   ├── pages/                    ←       Landing, Form (multi-step), Result
+│   │   ├── sections/                 ←       Hero, Stats, Features, How, About, FAQ, CTA
+│   │   ├── components/               ←       Navbar, Footer, RiskGauge, 3D scenes
+│   │   └── services/api.js
+│   └── package.json
 └── data_dictionary.md                ← Dokumentasi lengkap 47 kolom
 ```
 
@@ -63,7 +87,7 @@ pulsevera-cc26-pru439/
 
 ## Quick Start
 
-### Streamlit Dashboard
+### Streamlit Dashboard (Data Science)
 ```bash
 pip install streamlit plotly pandas scikit-learn scipy
 streamlit run dashboard/app.py
@@ -71,8 +95,34 @@ streamlit run dashboard/app.py
 
 ### Jupyter Notebooks
 ```bash
-pip install pandas numpy matplotlib seaborn scipy scikit-learn plotly
+pip install pandas numpy matplotlib seaborn scipy scikit-learn plotly imbalanced-learn joblib tensorflow shap
 jupyter notebook notebooks/
+```
+
+### ML API (FastAPI — AI Engineer)
+```bash
+cd ml-api
+pip install -r requirements.txt
+cp .env.example .env          # isi GEMINI_API_KEY (opsional)
+python train.py               # latih ML + DL + SHAP (butuh data/final/)
+uvicorn main:app --reload --port 8000
+```
+Buka `http://localhost:8000/docs` untuk dokumentasi interaktif. Detail di [`ml-api/README.md`](ml-api/README.md).
+
+### Backend (Express — proxy ke ML API)
+```bash
+cd backend
+cp .env.example .env          # PORT=3001, ML_API_URL=http://localhost:8000
+npm install
+npm run dev                   # http://localhost:3001
+```
+
+### Frontend (React + Vite)
+```bash
+cd frontend
+cp .env.example .env          # VITE_API_URL=http://localhost:3001
+npm install
+npm run dev                   # http://localhost:5173
 ```
 
 ---
@@ -89,18 +139,24 @@ jupyter notebook notebooks/
 - [x] Data Dictionary (`data_dictionary.md`)
 - [ ] Laporan Teknis PDF
 
-### AI Engineer 🔄 In Progress
-- [ ] Setup environment + eksplorasi data dari sisi model
-- [ ] Training ML models (LR, RF, DT) + handle class imbalance
-- [ ] Deep Learning (TensorFlow Functional API + custom component)
-- [ ] SHAP untuk interpretabilitas prediksi
-- [ ] FastAPI inference endpoint (`/api/v1/predict`)
+### AI Engineer ✅ Selesai (kontribusi Fathan + Shafira)
+- [x] Training ML models (LR, RF, DT) + SMOTE + class_weight (`05_ml_modeling.ipynb`)
+- [x] Hyperparameter tuning (`RandomizedSearchCV`, scoring=`f1`)
+- [x] Deep Learning — TensorFlow Functional API + Focal Loss + EarlyStoppingByRecall (`06_deep_learning.ipynb`)
+- [x] SHAP interpretability — TreeExplainer / LinearExplainer (`07_evaluation_shap.ipynb`)
+- [x] FastAPI endpoints: `/api/v1/predict` + `/api/v1/predict-dl` + `/api/v1/metadata` (`ml-api/main.py`)
+- [x] Preprocessing pipeline 10 → 46 fitur (`ml-api/preprocessing.py`)
+- [x] Generative AI recommendation via **Gemini API** (`ml-api/main.py`) — fallback rule-based
+- [x] Standalone training pipeline (`ml-api/train.py`) + TensorBoard logging
 
-### Full-Stack 🔄 In Progress
-- [ ] Setup GitHub repo & mockup UI/UX (Figma)
-- [ ] Frontend React — form input 10 field
-- [ ] Backend Node.js/Express — proxy ke ML API
-- [ ] Integrasi frontend ↔ backend ↔ ML API
+### Full-Stack 🔄 Sebagian (kontribusi Rifqi + Shafira)
+- [x] Frontend React (Vite + Tailwind + framer-motion + lucide-react + three.js)
+- [x] Routing dengan `react-router-dom` (`/`, `/check-risk`, `/result`)
+- [x] Landing page 7 sections + multi-step Form wizard + Result page interaktif
+- [x] Backend Express terstruktur (`src/app.js`, `src/controllers/`, `src/routes/`)
+- [x] Backend proxy ke ML API dengan validasi field & error handling
+- [ ] Integrasi end-to-end (test setelah model dilatih)
+- [ ] Mockup Figma
 - [ ] Deployment (Netlify/Vercel + Railway/Render)
 
 ---

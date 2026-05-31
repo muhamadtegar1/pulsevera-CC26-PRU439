@@ -5,5 +5,8 @@ venv/
 .venv/
 models/*.pkl
 models/*.keras
+models/*.json
 models/pulsevera_savedmodel/
 *.h5
+tensorboard_logs/
+logs/

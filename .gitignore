@@ -24,3 +24,19 @@ Thumbs.db
 # Claude Code (internal tool)
 .claude/
 CLAUDE.md
+
+# Archive of original team member submissions (kept locally for reference)
+_archive/
+
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite build output
+frontend/dist/
+
+# Backend logs
+backend/logs/

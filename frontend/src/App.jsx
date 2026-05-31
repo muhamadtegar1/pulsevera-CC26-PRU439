@@ -1,21 +1,88 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+  Navigate,
+} from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import LandingPage from './pages/LandingPage'
+import FormPage from './pages/FormPage'
+import ResultPage from './pages/ResultPage'
+import { predict } from './services/api'
 
-// TODO: Import pages here
-// import LandingPage from './pages/LandingPage'
-// import PredictPage from './pages/PredictPage'
-// import ResultPage from './pages/ResultPage'
+function LandingRoute() {
+  const navigate = useNavigate()
+  return <LandingPage onCheckRisk={() => navigate('/check-risk')} />
+}
 
-function App() {
+function FormRoute() {
+  const navigate = useNavigate()
+
+  const handleSubmit = async (data) => {
+    try {
+      const res = await predict(data)
+      navigate('/result', { state: { result: res, formData: data } })
+    } catch (err) {
+      throw err
+    }
+  }
+
+  return <FormPage onBack={() => navigate('/')} onSubmit={handleSubmit} />
+}
+
+function ResultRoute() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const state = location.state || {}
+
+  if (!state.result) {
+    return <Navigate to="/" replace />
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <h1 className="text-center text-3xl font-bold text-primary py-10">
-        Pulsevera — Predict, Prevent, Prevail
-      </h1>
-      <p className="text-center text-gray-500">
-        Frontend siap dikerjakan. Buat halaman di <code>src/pages/</code> dan komponen di <code>src/components/</code>.
-      </p>
-    </div>
+    <ResultPage
+      result={state.result}
+      formData={state.formData}
+      onBack={() => navigate('/')}
+      onRetake={() => navigate('/check-risk')}
+    />
   )
 }
 
-export default App
+function AnimatedRoutes() {
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [location.pathname])
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<LandingRoute />} />
+          <Route path="/check-risk" element={<FormRoute />} />
+          <Route path="/result" element={<ResultRoute />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AnimatedRoutes />
+    </BrowserRouter>
+  )
+}
