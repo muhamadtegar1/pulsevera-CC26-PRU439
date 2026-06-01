@@ -233,10 +233,24 @@ class RiskFactor(BaseModel):
     label: str
 
 
+class LifestyleHabit(BaseModel):
+    key: str
+    label: str
+    good: bool
+
+
+class LifestyleScore(BaseModel):
+    score: int = Field(..., description='Skor gaya hidup 0–5 (5 = paling sehat)')
+    max_score: int = 5
+    grade: str = Field(..., description='"Sangat Sehat" | "Sehat" | "Cukup" | "Perlu Perhatian" | "Berisiko"')
+    habits: list[LifestyleHabit] = Field(..., description='Breakdown 5 kebiasaan: smoking, exercise, sleep, weight, alcohol')
+
+
 class PredictionResult(BaseModel):
     risk_score: float = Field(..., description='Probabilitas 0.0–1.0 untuk HadHeartAttack=Yes')
     risk_percent: float = Field(..., description='risk_score x 100')
     risk_label: str = Field(..., description='"Rendah" | "Sedang" | "Tinggi"')
+    lifestyle: LifestyleScore = Field(..., description='Skor gaya hidup primary metric, complementary ke risk_score')
     top_risk_factors: list[RiskFactor]
     recommendations: list[str]
     recommendation_source: str = Field(..., description='"gemini" | "rule_based"')
@@ -343,6 +357,75 @@ def _resolve_recommendations(user_input: dict, top_features: list[str]) -> tuple
     return rule_based, "rule_based"
 
 
+def compute_lifestyle_score(user_input: dict[str, Any]) -> LifestyleScore:
+    """Skor gaya hidup 0–5 dihitung dari 5 kebiasaan keseharian.
+
+    Sejajar dengan feature engineering DS (LifestyleRiskScore), tapi
+    di-INVERSI agar score TINGGI = LEBIH BAIK (lebih intuitif untuk end user).
+
+    Skor 5 = 5 kebiasaan baik semua
+    Skor 0 = 5 kebiasaan buruk semua
+    """
+    sex = user_input.get('sex', 'Male')
+    smoker = user_input.get('smoker_status', 'Never')
+    exercise = user_input.get('physical_activities', 'Yes')
+    sleep = float(user_input.get('sleep_hours', 7))
+    alcohol = user_input.get('alcohol', 'No')
+
+    height = float(user_input.get('height_meters', 1.7))
+    weight = float(user_input.get('weight_kg', 70))
+    bmi = weight / (height ** 2)
+
+    # 5 habit indicators (True = good habit)
+    not_smoking = smoker in ('Never', 'Former')
+    active = exercise == 'Yes'
+    enough_sleep = 6 <= sleep <= 9
+    healthy_weight = 18.5 <= bmi < 30
+    not_drinking = alcohol == 'No'
+
+    score = sum([not_smoking, active, enough_sleep, healthy_weight, not_drinking])
+
+    grade_map = {
+        5: 'Sangat Sehat',
+        4: 'Sehat',
+        3: 'Cukup',
+        2: 'Perlu Perhatian',
+        1: 'Berisiko',
+        0: 'Berisiko Tinggi',
+    }
+    grade = grade_map[score]
+
+    habits = [
+        LifestyleHabit(
+            key='not_smoking',
+            label='Tidak merokok aktif' if not_smoking else 'Masih merokok aktif',
+            good=not_smoking,
+        ),
+        LifestyleHabit(
+            key='active',
+            label='Aktif berolahraga' if active else 'Kurang aktivitas fisik',
+            good=active,
+        ),
+        LifestyleHabit(
+            key='enough_sleep',
+            label=f'Pola tidur sehat ({sleep:.0f} jam)' if enough_sleep else f'Pola tidur kurang ideal ({sleep:.0f} jam)',
+            good=enough_sleep,
+        ),
+        LifestyleHabit(
+            key='healthy_weight',
+            label=f'BMI ideal ({bmi:.1f})' if healthy_weight else f'BMI di luar normal ({bmi:.1f})',
+            good=healthy_weight,
+        ),
+        LifestyleHabit(
+            key='not_drinking',
+            label='Tidak konsumsi alkohol' if not_drinking else 'Konsumsi alkohol',
+            good=not_drinking,
+        ),
+    ]
+
+    return LifestyleScore(score=score, max_score=5, grade=grade, habits=habits)
+
+
 def _predict_core(user_input: UserInput, prefer: str) -> PredictionResult:
     if prefer == 'ml' and inference.bundle.ml_model is None:
         raise HTTPException(
@@ -365,6 +448,7 @@ def _predict_core(user_input: UserInput, prefer: str) -> PredictionResult:
     proba = inference.predict_proba(input_df, prefer=prefer)
     top_features = inference.get_top_risk_factors(input_df, top_n=3)
     label = inference.risk_label(proba)
+    lifestyle = compute_lifestyle_score(payload)
     recommendations, rec_source = _resolve_recommendations(payload, top_features)
 
     elapsed_ms = (time.perf_counter() - t0) * 1000
@@ -378,6 +462,7 @@ def _predict_core(user_input: UserInput, prefer: str) -> PredictionResult:
         risk_score=round(proba, 4),
         risk_percent=round(proba * 100, 2),
         risk_label=label,
+        lifestyle=lifestyle,
         top_risk_factors=[
             RiskFactor(feature=f, label=inference.factor_to_label(f)) for f in top_features
         ],
@@ -390,11 +475,14 @@ def _predict_core(user_input: UserInput, prefer: str) -> PredictionResult:
 
 @app.post('/api/v1/predict', response_model=PredictionResult)
 async def predict(user_input: UserInput):
-    """Prediksi via best ML model (default — cepat, ringan, SHAP-friendly)."""
-    return _predict_core(user_input, prefer='ml')
+    """Prediksi via Deep Learning model (default, sesuai keputusan tim AI Engineer).
 
-
-@app.post('/api/v1/predict-dl', response_model=PredictionResult)
-async def predict_dl(user_input: UserInput):
-    """Prediksi via Deep Learning model (TensorFlow)."""
+    DL + SMOTE @ threshold 0.23: Acc 85.76%, Recall 71.15%, ROC-AUC 0.881.
+    """
     return _predict_core(user_input, prefer='dl')
+
+
+@app.post('/api/v1/predict-ml', response_model=PredictionResult)
+async def predict_ml(user_input: UserInput):
+    """Prediksi via Random Forest baseline (alternatif untuk benchmarking)."""
+    return _predict_core(user_input, prefer='ml')

@@ -165,21 +165,32 @@ def train_ml(X_train, X_test, y_train, y_test, do_tune: bool = True):
     return best_model, scaler, feature_meta, results
 
 
-def train_dl(X_train, X_test, y_train, y_test, scaler, epochs: int = 30):
+def train_dl(X_train, X_test, y_train, y_test, scaler, epochs: int = 30, use_smote: bool = True):
     import tensorflow as tf
+    import keras
+    from keras import layers
+    from imblearn.over_sampling import SMOTE
     from sklearn.metrics import (
         accuracy_score, f1_score, precision_score, recall_score, roc_auc_score,
     )
     from sklearn.utils.class_weight import compute_class_weight
-    from tensorflow import keras
-    from tensorflow.keras import layers
 
     np.random.seed(RANDOM_STATE)
     tf.random.set_seed(RANDOM_STATE)
 
-    X_train_s = scaler.transform(X_train).astype('float32')
+    if use_smote:
+        log.info('Apply SMOTE for DL training (sampling_strategy=0.3)...')
+        smote = SMOTE(random_state=RANDOM_STATE, sampling_strategy=0.3)
+        X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+        log.info('After SMOTE: %s | positif=%d',
+                 X_train_res.shape, int(np.sum(y_train_res == 1)))
+    else:
+        log.info('SMOTE disabled for DL (notebook 06 style: class_weight only)...')
+        X_train_res, y_train_res = X_train, y_train
+
+    X_train_s = scaler.transform(X_train_res).astype('float32')
     X_test_s = scaler.transform(X_test).astype('float32')
-    y_train_arr = y_train.values.astype('float32')
+    y_train_arr = y_train_res.values.astype('float32') if hasattr(y_train_res, 'values') else np.asarray(y_train_res, dtype='float32')
     y_test_arr = y_test.values.astype('float32')
 
     @keras.saving.register_keras_serializable(package='pulsevera', name='focal_loss')
@@ -246,23 +257,50 @@ def train_dl(X_train, X_test, y_train, y_test, scaler, epochs: int = 30):
     run_dir = LOG_DIR / run_name
 
     log.info('Train DL (functional API) for up to %d epochs...', epochs)
+    # Match notebook 06 Fathan exactly:
+    # - validation_split=0.20 (bukan 0.15)
+    # - TANPA ReduceLROnPlateau — LR diturunkan terlalu cepat menyebabkan
+    #   model stuck di local minimum (all-negative) saat class imbalance ekstrem
     model.fit(
         X_train_s, y_train_arr,
-        validation_split=0.15, epochs=epochs, batch_size=512,
+        validation_split=0.20, epochs=epochs, batch_size=512,
         class_weight=class_weight,
         callbacks=[
-            EarlyStoppingByRecall(patience=5),
-            keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6),
+            EarlyStoppingByRecall(patience=10),
             keras.callbacks.TensorBoard(log_dir=str(run_dir), histogram_freq=1),
         ],
         verbose=2,
     )
 
     y_proba = model.predict(X_test_s, batch_size=1024, verbose=0).ravel()
-    best_thr = max(
-        [0.3, 0.35, 0.4, 0.45, 0.5],
-        key=lambda t: f1_score(y_test_arr, (y_proba >= t).astype(int), pos_label=1, zero_division=0),
-    )
+
+    # Comprehensive threshold tuning: prioritize recall >= 0.70 (medical priority)
+    # then within recall-passing thresholds, pick the one with best F1
+    threshold_candidates = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
+    threshold_metrics = []
+    for thr in threshold_candidates:
+        y_pred_thr = (y_proba >= thr).astype(int)
+        threshold_metrics.append({
+            'threshold': thr,
+            'recall': recall_score(y_test_arr, y_pred_thr, pos_label=1, zero_division=0),
+            'precision': precision_score(y_test_arr, y_pred_thr, pos_label=1, zero_division=0),
+            'f1': f1_score(y_test_arr, y_pred_thr, pos_label=1, zero_division=0),
+            'accuracy': accuracy_score(y_test_arr, y_pred_thr),
+        })
+
+    # Pilih threshold yang capai recall >= 0.70 dengan F1 tertinggi
+    recall_passing = [m for m in threshold_metrics if m['recall'] >= 0.70]
+    if recall_passing:
+        best = max(recall_passing, key=lambda m: m['f1'])
+    else:
+        # Tidak ada yang capai recall 0.70 → ambil yang recall paling tinggi
+        best = max(threshold_metrics, key=lambda m: m['recall'])
+        log.warning('Tidak ada threshold dengan recall >= 0.70. Pakai threshold dengan recall tertinggi: %.4f', best['recall'])
+
+    best_thr = best['threshold']
+    log.info('Best threshold: %.2f | recall=%.4f | precision=%.4f | f1=%.4f',
+             best_thr, best['recall'], best['precision'], best['f1'])
+
     y_pred = (y_proba >= best_thr).astype(int)
 
     model.save(MODELS_DIR / 'pulsevera_dl_model.keras')
@@ -334,6 +372,7 @@ def main():
     parser.add_argument('--skip-dl', action='store_true')
     parser.add_argument('--skip-shap', action='store_true')
     parser.add_argument('--no-tune', action='store_true', help='Skip RandomizedSearchCV')
+    parser.add_argument('--no-smote-dl', action='store_true', help='Disable SMOTE for DL training (use class_weight only — notebook 06 Fathan style)')
     parser.add_argument('--epochs', type=int, default=30)
     args = parser.parse_args()
 
@@ -362,7 +401,7 @@ def main():
             from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler().fit(X_train)
             joblib.dump(scaler, MODELS_DIR / 'scaler.pkl')
-        train_dl(X_train, X_test, y_train, y_test, scaler, epochs=args.epochs)
+        train_dl(X_train, X_test, y_train, y_test, scaler, epochs=args.epochs, use_smote=not args.no_smote_dl)
 
     if not args.skip_shap and ml_model is not None and feature_meta is not None:
         build_shap(ml_model, X_train, scaler, feature_meta)

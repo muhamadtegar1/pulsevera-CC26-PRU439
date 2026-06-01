@@ -4,8 +4,8 @@ import { Database, Cpu, ChartBar, Shield } from 'lucide-react'
 
 const TECH = [
   { icon: Database, label: 'Dataset', value: 'CDC BRFSS 2022', desc: '445.132 responden' },
-  { icon: Cpu, label: 'Model', value: 'Random Forest + DL', desc: 'TensorFlow + Scikit-learn' },
-  { icon: ChartBar, label: 'Akurasi', value: '> 85%', desc: 'Recall positif > 70%' },
+  { icon: Cpu, label: 'Model', value: 'Deep Learning', desc: 'TensorFlow Functional API + SMOTE' },
+  { icon: ChartBar, label: 'Performa', value: '85.76%', desc: 'Accuracy + Recall 71.15%' },
   { icon: Shield, label: 'Interpretability', value: 'SHAP', desc: 'Per-prediction explanation' },
 ]
 

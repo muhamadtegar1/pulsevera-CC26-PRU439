@@ -98,7 +98,7 @@ class ModelBundle:
         if dl_path.exists():
             try:
                 import tensorflow as tf
-                from tensorflow import keras
+                import keras
 
                 @keras.saving.register_keras_serializable(
                     package='pulsevera', name='focal_loss'
@@ -154,9 +154,17 @@ def predict_proba(input_df: pd.DataFrame, prefer: str = 'ml') -> float:
 
 
 def risk_label(prob: float) -> str:
-    if prob < 0.30:
+    """Konversi probability ke risk label.
+
+    Boundary align dengan operational threshold DL model = 0.23 (sweet spot
+    yang disepakati tim: Acc >= 85%, Recall >= 70% pada threshold 0.23).
+    - < 0.23      => Rendah (model klasifikasi negatif)
+    - 0.23 - 0.40 => Sedang (di atas threshold positif, tapi belum tinggi)
+    - >= 0.40     => Tinggi (probability tinggi terhadap kelas positif)
+    """
+    if prob < 0.23:
         return 'Rendah'
-    if prob < 0.60:
+    if prob < 0.40:
         return 'Sedang'
     return 'Tinggi'
 

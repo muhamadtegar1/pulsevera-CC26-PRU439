@@ -35,22 +35,19 @@ export default function HeroSection({ onCheckRisk }) {
               </span>
 
               <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95] text-balance">
-                Predict.{' '}
-                <span className="text-gradient">Prevent.</span>
-                <br />
-                Prevail.
+                Jantungmu,{' '}
+                <span className="text-gradient">Cerita Masa Depanmu.</span>
               </h2>
 
               <p className="mt-6 max-w-xl text-base sm:text-lg text-ink-900/70 text-balance">
-                Pulsevera memprediksi risiko penyakit jantung Anda dalam{' '}
-                <strong>15 detik</strong> berdasarkan 10 pertanyaan gaya hidup
-                — didukung machine learning dengan akurasi tinggi dan
-                penjelasan SHAP yang transparan.
+                Cek seberapa sehat gaya hidup Anda untuk kesehatan jantung jangka panjang.
+                Pulsevera menganalisis <strong>10 kebiasaan harian</strong> Anda dalam 15 detik —
+                didukung machine learning dengan penjelasan transparan via SHAP.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <button onClick={onCheckRisk} className="btn-primary">
-                  Mulai Cek Risiko
+                  Cek Gaya Hidup Anda
                   <ArrowUpRight size={16} />
                 </button>
                 <a href="#how" className="btn-secondary">Cara kerjanya</a>
@@ -91,15 +88,15 @@ export default function HeroSection({ onCheckRisk }) {
               />
               <FloatBadge
                 position="bottom-20 left-0 sm:left-2"
-                title="Risk Predicted"
-                value="Low"
+                title="Lifestyle"
+                value="5/5"
                 accent="bg-mint-500"
                 delay={0.6}
               />
               <FloatBadge
                 position="top-1/2 left-4 sm:left-10"
-                title="ML Confidence"
-                value="93%"
+                title="Habits"
+                value="Sehat"
                 accent="bg-pulse-600"
                 delay={0.8}
               />
