@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: pulsevera-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: ML_API_URL
+        fromService:
+          type: web
+          name: pulsevera-ml-api
+          property: host

@@ -1,0 +1,38 @@
+{
+  "explainer_type": "TreeExplainer",
+  "global_importance_top10": {
+    "GeneralHealth": 0.111,
+    "RemovedTeeth": 0.0804,
+    "AgeCategory": 0.0758,
+    "HadAngina": 0.0634,
+    "HadDiabetes": 0.0575,
+    "AlcoholDrinkers": 0.0475,
+    "Race_White only, Non-Hispanic": 0.0403,
+    "PhysicalActivities": 0.0394,
+    "HIVTesting": 0.0318,
+    "CovidPos": 0.0228
+  },
+  "global_importance_top20": {
+    "GeneralHealth": 0.111,
+    "RemovedTeeth": 0.0804,
+    "AgeCategory": 0.0758,
+    "HadAngina": 0.0634,
+    "HadDiabetes": 0.0575,
+    "AlcoholDrinkers": 0.0475,
+    "Race_White only, Non-Hispanic": 0.0403,
+    "PhysicalActivities": 0.0394,
+    "HIVTesting": 0.0318,
+    "CovidPos": 0.0228,
+    "PhysicalHealthDays": 0.0209,
+    "HeightInMeters": 0.0192,
+    "ChestScan": 0.0178,
+    "ECigaretteUsage": 0.0165,
+    "SleepHours": 0.0162,
+    "Sex": 0.0129,
+    "HadDepressiveDisorder": 0.0121,
+    "WeightInKilograms": 0.0107,
+    "LifestyleRiskScore": 0.0106,
+    "HadAsthma": 0.0105
+  },
+  "sample_size": 200
+}

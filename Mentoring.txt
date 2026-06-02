@@ -1,0 +1,35 @@
+## Notes & Action Items — Mentoring 1
+
+1. Integrasi Gemini: Setelah menghasilkan skor risiko dan kategori, kirim data perilaku pengguna dan hasil prediksi ke Gemini untuk generate rekomendasi personal. Tampilkan loading indicator ("Sedang menyiapkan rekomendasi kesehatan personal...") selama proses async call berlangsung.
+
+2. Struktur halaman aplikasi: Home (penjelasan + disclaimer bukan pengganti dokter) → Prediksi (input form + hasil + rekomendasi Gemini) → Visualisasi Data (insight dataset) → News/Edukasi (nice to have).
+
+3. Halaman Visualisasi: Tampilkan fitur yang tidak dipakai prediksi (seperti Angina) sebagai insight tambahan dengan catatan: "Faktor ini juga berpengaruh terhadap risiko jantung. Disarankan konsultasi lebih lanjut ke dokter."
+
+4. Eksperimen model DL (6 variasi): Baseline (current) → Shallow NN → Deep NN → Wide NN → Tanpa BatchNorm → Tanpa Dropout. Bandingkan semua menggunakan Accuracy, Precision, Recall, F1, ROC-AUC.
+
+5. Tuning yang disarankan: (a) Learning Rate Scheduler, (b) Hilangkan Dropout sebelum output layer agar informasi penting tidak terbuang.
+
+6. Gunakan data dummy untuk demo, uji UI, dan validasi alur prediksi sebelum data aktual tersedia.
+
+7. Dokumentasikan semua eksperimen dan simpan hasil evaluasi tiap model agar pemilihan model final berbasis data, bukan asumsi.
+
+8. Pastikan konsistensi antara output Gemini dan hasil prediksi model di setiap skenario penggunaan.
+
+---
+
+## Notes & Action Items — Mentoring 2
+
+1. Insight utama aplikasi: Fokus pada data mapping yang ramah untuk end user awam. Pilih fitur yang merupakan bagian dari keseharian pengguna (seperti jam tidur, aktivitas fisik, kebiasaan merokok) sehingga meminimalkan kemungkinan missing value saat pengisian form.
+
+2. Akurasi bukan masalah sebenarnya, model sudah menghasilkan probabilitas yang bermakna. Output yang diutamakan adalah skor probabilitas risiko, bukan sekadar label biner (0/1).
+
+3. Terapkan SHAP (TreeExplainer) sebelum finalisasi fitur akhir. Gunakan hasilnya sebagai argumen kuat kenapa fitur-fitur tersebut dipilih dalam presentasi.
+
+4. Personalisasi pengalaman pengguna: buat input form yang mengantisipasi ketidaktahuan end user awam (contoh: tambahkan tooltip, contoh nilai, atau skala referensi untuk setiap field input).
+
+5. Struktur slide presentasi: Judul → Pembukaan (tambah konteks relevansi/statistik penyakit jantung) → Slide khusus penjurian → Problem Definition → Solution → Dampak (penjelasan dataset dan alasan kuat pemilihan fitur) → Perbandingan benchmark antar model (sertakan data metrik: Accuracy, Recall, F1, ROC-AUC) → Penjelasan pemilihan model akhir → Demo produk (cara pakai dan interpretasi hasil).
+
+6. Siapkan jawaban untuk pertanyaan dari juri berdasarkan konten PPT, khususnya seputar justifikasi pemilihan dataset, pendekatan penanganan imbalance, dan relevansi fitur terhadap kehidupan nyata pengguna.
+
+7. Presentasi harus berfokus pada proses bisnis dan dampak, bukan semata-mata aspek teknis machine learning.

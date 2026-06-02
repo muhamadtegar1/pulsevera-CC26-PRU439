@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Baseline (Production)",
+    "desc": "Dense[256-128-64-1] + BN + Dropout 0.3",
+    "n_params": 55041,
+    "train_seconds": 73.0,
+    "threshold": 0.23,
+    "accuracy": 0.9038830916463545,
+    "recall": 0.60294703305456,
+    "precision": 0.3157126472734856,
+    "f1": 0.41442551153082874,
+    "roc_auc": 0.8610707375969046
+  },
+  {
+    "name": "Shallow NN",
+    "desc": "Dense[64-1] + Dropout 0.3",
+    "n_params": 3073,
+    "train_seconds": 25.3,
+    "threshold": 0.23,
+    "accuracy": 0.9149246857694857,
+    "recall": 0.515531660692951,
+    "precision": 0.3349288486416559,
+    "f1": 0.4060539523212045,
+    "roc_auc": 0.8462798197780372
+  },
+  {
+    "name": "Deep NN",
+    "desc": "Dense[512-256-128-64-32-1] + BN + Dropout 0.3",
+    "n_params": 202625,
+    "train_seconds": 108.3,
+    "threshold": 0.23,
+    "accuracy": 0.891089220124232,
+    "recall": 0.6164874551971327,
+    "precision": 0.2849254555494202,
+    "f1": 0.38972809667673713,
+    "roc_auc": 0.8444413629491578
+  },
+  {
+    "name": "Wide NN",
+    "desc": "Dense[512-512-1] + BN + Dropout 0.3",
+    "n_params": 291329,
+    "train_seconds": 76.6,
+    "threshold": 0.23,
+    "accuracy": 0.8985027014276568,
+    "recall": 0.6200716845878136,
+    "precision": 0.30404217926186294,
+    "f1": 0.4080188679245283,
+    "roc_auc": 0.8681409381602918
+  },
+  {
+    "name": "No BatchNorm",
+    "desc": "Dense[256-128-64-1] + Dropout 0.3 (no BN)",
+    "n_params": 53249,
+    "train_seconds": 35.6,
+    "threshold": 0.23,
+    "accuracy": 0.664730924326328,
+    "recall": 0.8900836320191159,
+    "precision": 0.13238168571936268,
+    "f1": 0.23048365473857893,
+    "roc_auc": 0.8761433586037279
+  },
+  {
+    "name": "No Final Dropout",
+    "desc": "Dense[256-128-64-1] + BN + Dropout (except before output)",
+    "n_params": 55041,
+    "train_seconds": 59.7,
+    "threshold": 0.23,
+    "accuracy": 0.8621991081357341,
+    "recall": 0.6951413779370769,
+    "precision": 0.24536125948833287,
+    "f1": 0.3627012987012987,
+    "roc_auc": 0.8746178809547733
+  }
+]

@@ -1,7 +1,13 @@
 # Data files — simpan di Google Drive, bukan GitHub
-data/
+/data/
 dataset.csv
 *.csv
+# Exception: sample data untuk Streamlit Cloud (5.9MB, stratified 10%)
+!dashboard/data/
+!dashboard/data/*.csv
+
+# Root-level log files
+*.log
 
 # Python
 __pycache__/

@@ -55,9 +55,17 @@ app = FastAPI(
     contact={'name': 'Pulsevera AI Engineer (Fathan & Shafira)'},
 )
 
+_ALLOWED_ORIGINS = os.getenv(
+    'ALLOWED_ORIGINS',
+    'http://localhost:5173,http://localhost:3001'
+).split(',')
+# Lokal dev: localhost diizinkan. Production: set env ALLOWED_ORIGINS dengan domain Vercel/Netlify.
+if '*' in _ALLOWED_ORIGINS or os.getenv('ALLOWED_ORIGINS') is None:
+    _ALLOWED_ORIGINS = ['*']
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_methods=['*'],
     allow_headers=['*'],
 )
@@ -92,6 +100,10 @@ Aturan wajib:
 - Jangan mendiagnosis penyakit dan jangan memberi dosis obat atau suplemen.
 - Jika ada faktor diabetes, perokok aktif, obesitas, usia 60+, atau kesehatan umum buruk, anjurkan konsultasi tenaga kesehatan.
 - Hindari kalimat menakut-nakuti; gunakan nada profesional dan suportif.
+- Tone WAJIB konsisten dengan label_risiko dalam profil:
+  * label_risiko "Rendah": nada positif, fokus pemeliharaan — JANGAN anjurkan konsultasi darurat atau tindakan segera.
+  * label_risiko "Sedang": nada suportif dan proaktif, dorong evaluasi rutin.
+  * label_risiko "Tinggi": nada tegas tapi empati, anjurkan konsultasi tenaga kesehatan dalam waktu dekat.
 """
 
 
@@ -129,7 +141,28 @@ def get_gemini_model_candidates() -> list[str]:
     return deduped
 
 
-def build_gemini_prompt(user_input: dict[str, Any], top_factors_labels: list[str]) -> str:
+_TONE_GUIDE = {
+    "Rendah": "Nada: positif dan motivasi. Fokus pemeliharaan — jangan anjurkan konsultasi darurat.",
+    "Sedang": "Nada: suportif dan proaktif. Dorong evaluasi rutin dengan dokter.",
+    "Tinggi": "Nada: tegas tapi empati. Anjurkan konsultasi tenaga kesehatan dalam waktu dekat.",
+}
+
+_LIFESTYLE_NOTE = {
+    "Sangat Sehat": "Gaya hidup sudah sangat baik — fokus pada konsistensi dan pemeliharaan.",
+    "Sehat": "Gaya hidup baik — ada satu aspek kecil yang bisa ditingkatkan.",
+    "Cukup": "Beberapa kebiasaan perlu diperbaiki — mulai dari yang paling mudah.",
+    "Perlu Perhatian": "Beberapa kebiasaan berisiko — prioritaskan perubahan yang paling berdampak.",
+    "Berisiko": "Banyak kebiasaan berisiko — butuh perubahan bertahap yang konsisten.",
+    "Berisiko Tinggi": "Gaya hidup berisiko tinggi — mulai perubahan sekarang dan konsultasi dokter.",
+}
+
+
+def build_gemini_prompt(
+    user_input: dict[str, Any],
+    top_factors_labels: list[str],
+    risk_label: str = "Rendah",
+    lifestyle_grade: str = "Cukup",
+) -> str:
     bmi = float(user_input["weight_kg"]) / (float(user_input["height_meters"]) ** 2)
     age_category = int(user_input.get("age_category", 1))
     profile = {
@@ -142,11 +175,17 @@ def build_gemini_prompt(user_input: dict[str, Any], top_factors_labels: list[str
         "alkohol": user_input.get("alcohol"),
         "kesehatan_umum": user_input.get("general_health"),
         "diabetes": user_input.get("diabetes", "No"),
+        "label_risiko": risk_label,
+        "grade_gaya_hidup": lifestyle_grade,
     }
+    tone = _TONE_GUIDE.get(risk_label, "Nada: profesional dan suportif.")
+    lifestyle_note = _LIFESTYLE_NOTE.get(lifestyle_grade, "")
     return (
         "Buat 3 rekomendasi gaya hidup untuk profil berikut.\n"
         f"Profil pengguna:\n{json.dumps(profile, ensure_ascii=False, indent=2)}\n"
         f"Faktor risiko prioritas:\n{json.dumps(top_factors_labels, ensure_ascii=False)}\n"
+        f"{tone}\n"
+        f"{lifestyle_note}\n"
         "Fokus pada perubahan perilaku yang paling relevan untuk faktor risiko tersebut."
     )
 
@@ -191,7 +230,12 @@ def parse_gemini_response(response: Any) -> list[str]:
     return normalize_recommendations(recs)
 
 
-def get_gemini_recommendations(user_input: dict[str, Any], top_factors: list[str]) -> list[str]:
+def get_gemini_recommendations(
+    user_input: dict[str, Any],
+    top_factors: list[str],
+    risk_label: str = "Rendah",
+    lifestyle_grade: str = "Cukup",
+) -> list[str]:
     if gemini_client is None or types is None:
         return []
     factor_labels = [inference.factor_to_label(f) for f in top_factors]
@@ -199,7 +243,7 @@ def get_gemini_recommendations(user_input: dict[str, Any], top_factors: list[str
         try:
             response = gemini_client.models.generate_content(
                 model=model_name,
-                contents=build_gemini_prompt(user_input, factor_labels),
+                contents=build_gemini_prompt(user_input, factor_labels, risk_label, lifestyle_grade),
                 config=build_gemini_config(model_name),
             )
             recs = parse_gemini_response(response)
@@ -348,9 +392,14 @@ async def metadata():
     )
 
 
-def _resolve_recommendations(user_input: dict, top_features: list[str]) -> tuple[list[str], str]:
+def _resolve_recommendations(
+    user_input: dict,
+    top_features: list[str],
+    risk_label: str = "Rendah",
+    lifestyle_grade: str = "Cukup",
+) -> tuple[list[str], str]:
     """Coba Gemini dulu, fallback ke rule-based bila gagal."""
-    gemini_recs = get_gemini_recommendations(user_input, top_features)
+    gemini_recs = get_gemini_recommendations(user_input, top_features, risk_label, lifestyle_grade)
     if gemini_recs:
         return gemini_recs, "gemini"
     rule_based = inference.generate_recommendations(user_input, top_features)
@@ -449,7 +498,9 @@ def _predict_core(user_input: UserInput, prefer: str) -> PredictionResult:
     top_features = inference.get_top_risk_factors(input_df, top_n=3)
     label = inference.risk_label(proba)
     lifestyle = compute_lifestyle_score(payload)
-    recommendations, rec_source = _resolve_recommendations(payload, top_features)
+    recommendations, rec_source = _resolve_recommendations(
+        payload, top_features, risk_label=label, lifestyle_grade=lifestyle.grade
+    )
 
     elapsed_ms = (time.perf_counter() - t0) * 1000
     model_used = (

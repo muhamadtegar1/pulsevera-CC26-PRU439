@@ -4,10 +4,8 @@ __pycache__/
 venv/
 .venv/
 models/*.pkl
-models/*.keras
-models/*.json
 models/*.bak
+# .keras (692KB) dan .json di-track; .pkl terlalu besar (500MB+) → Git LFS atau retrain
 models/pulsevera_savedmodel/
 *.h5
-tensorboard_logs/
 logs/

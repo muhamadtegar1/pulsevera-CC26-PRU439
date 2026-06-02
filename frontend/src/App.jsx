@@ -11,7 +11,34 @@ import { AnimatePresence, motion } from 'framer-motion'
 import LandingPage from './pages/LandingPage'
 import FormPage from './pages/FormPage'
 import ResultPage from './pages/ResultPage'
+import InsightsPage from './pages/InsightsPage'
 import { predict } from './services/api'
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info)
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 32, fontFamily: 'monospace', background: '#fee2e2', minHeight: '100vh' }}>
+          <h2 style={{ color: '#dc2626' }}>Runtime Error — buka DevTools (F12) untuk detail</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', color: '#7f1d1d', marginTop: 16 }}>
+            {this.state.error.toString()}
+          </pre>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 function LandingRoute() {
   const navigate = useNavigate()
@@ -52,6 +79,11 @@ function ResultRoute() {
   )
 }
 
+function InsightsRoute() {
+  const navigate = useNavigate()
+  return <InsightsPage onBack={() => navigate('/')} onCheckRisk={() => navigate('/check-risk')} />
+}
+
 function AnimatedRoutes() {
   const location = useLocation()
 
@@ -72,6 +104,7 @@ function AnimatedRoutes() {
           <Route path="/" element={<LandingRoute />} />
           <Route path="/check-risk" element={<FormRoute />} />
           <Route path="/result" element={<ResultRoute />} />
+          <Route path="/insights" element={<InsightsRoute />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </motion.div>
@@ -81,8 +114,10 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AnimatedRoutes />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AnimatedRoutes />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }

@@ -197,12 +197,119 @@ def _ensure_explainer():
     return bundle.explainer
 
 
+# Feature value yang dianggap "risky" untuk user — based on domain knowledge.
+# Dipakai untuk filter top features yang RELEVAN untuk user spesifik.
+def _is_value_risky(feature: str, value: float) -> bool:
+    """Apakah value user untuk fitur ini tergolong risky?"""
+    risky_thresholds = {
+        'AgeCategory': lambda v: v >= 9,           # 60 tahun ke atas
+        'BMI': lambda v: v >= 30 or v < 18.5,       # obesitas atau kurus
+        'WeightInKilograms': lambda v: v >= 90,
+        'SmokerStatus': lambda v: v >= 2,           # Current-some / Current-every
+        'IsActiveSmoker': lambda v: v >= 1,
+        'AlcoholDrinkers': lambda v: v >= 1,
+        'SleepHours': lambda v: v < 6 or v > 9,
+        'IsSleepDeprived': lambda v: v >= 1,
+        'IsObese': lambda v: v >= 1,
+        'PhysicalActivities': lambda v: v < 1,      # tidak olahraga
+        'GeneralHealth': lambda v: v <= 2,          # Poor / Fair
+        'HadDiabetes': lambda v: v >= 1,
+        'HadAngina': lambda v: v >= 1,
+        'HadStroke': lambda v: v >= 1,
+        'HadCOPD': lambda v: v >= 1,
+        'HadKidneyDisease': lambda v: v >= 1,
+        'HasChronicCondition': lambda v: v >= 1,
+        'LifestyleRiskScore': lambda v: v >= 2,
+        'PoorHealthDays_Total': lambda v: v >= 5,
+    }
+    if feature not in risky_thresholds:
+        return False
+    try:
+        return bool(risky_thresholds[feature](float(value)))
+    except (TypeError, ValueError):
+        return False
+
+
 def get_top_risk_factors(
     input_df: pd.DataFrame,
     top_n: int = 3,
     feature_names: Optional[list[str]] = None,
 ) -> list[str]:
-    """Return top-N nama fitur dengan kontribusi |SHAP| tertinggi."""
+    """Return top-N nama fitur paling berkontribusi terhadap risk untuk user ini.
+
+    Strategy (fast — pre-computed):
+    1. Ambil global feature importance (dari SHAP metadata atau feature_importances_)
+    2. Filter ke fitur yang user input value-nya "risky" (above threshold domain-knowledge)
+    3. Return top-N yang BOTH important AND risky-for-this-user.
+
+    Kalau tidak ada risky factors (user sangat sehat), return top-N feature importance
+    saja tanpa filter risky — supaya endpoint selalu ada response.
+
+    Performance: <10ms (vs 7000ms untuk SHAP TreeExplainer per-request).
+    """
+    feature_names = feature_names or bundle.feature_order or input_df.columns.tolist()
+
+    # Step 1: Get global importance ranking
+    global_importance: Optional[pd.Series] = None
+
+    # Try SHAP metadata first (computed via generate_shap_analysis.py)
+    shap_meta_path = MODELS_DIR / 'shap_metadata.json'
+    if shap_meta_path.exists():
+        try:
+            with open(shap_meta_path) as f:
+                meta = json.load(f)
+            top20 = meta.get('global_importance_top20') or meta.get('global_importance_top10')
+            if top20:
+                global_importance = pd.Series(top20)
+        except Exception as exc:
+            logger.warning('Gagal load shap_metadata.json: %s', exc)
+
+    # Fallback ke feature_importances_ dari RF (instant)
+    if global_importance is None and bundle.ml_model is not None:
+        if hasattr(bundle.ml_model, 'feature_importances_'):
+            global_importance = pd.Series(
+                bundle.ml_model.feature_importances_, index=feature_names,
+            ).sort_values(ascending=False)
+        elif hasattr(bundle.ml_model, 'coef_'):
+            global_importance = pd.Series(
+                np.abs(bundle.ml_model.coef_[0]), index=feature_names,
+            ).sort_values(ascending=False)
+
+    if global_importance is None:
+        # Last resort: return first N features in order
+        return feature_names[:top_n]
+
+    # Step 2: Filter to features yang user value-nya risky
+    user_values = input_df.iloc[0].to_dict()
+    risky_features = []
+    safe_features = []  # important tapi user-nya value-nya OK
+    for feature, importance in global_importance.items():
+        if feature not in user_values:
+            continue
+        if _is_value_risky(feature, user_values[feature]):
+            risky_features.append(feature)
+        else:
+            safe_features.append(feature)
+        if len(risky_features) >= top_n:
+            break
+
+    # Step 3: Return risky features priority. Top up dengan safe kalau kurang.
+    result = risky_features[:top_n]
+    if len(result) < top_n:
+        result.extend(safe_features[: top_n - len(result)])
+    return result[:top_n]
+
+
+def get_top_risk_factors_shap(
+    input_df: pd.DataFrame,
+    top_n: int = 3,
+    feature_names: Optional[list[str]] = None,
+) -> list[str]:
+    """Slow path — explicit SHAP TreeExplainer per-request.
+
+    Hanya dipakai untuk debugging / endpoint khusus. Untuk produksi gunakan
+    `get_top_risk_factors()` yang fast version.
+    """
     feature_names = feature_names or bundle.feature_order or input_df.columns.tolist()
 
     explainer = _ensure_explainer()

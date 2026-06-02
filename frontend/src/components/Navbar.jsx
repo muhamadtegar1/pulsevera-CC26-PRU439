@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Heart, Menu, X, ArrowUpRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Heart, Menu, X, ArrowUpRight, BarChart2 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Beranda', href: '#home' },
@@ -8,6 +9,7 @@ const NAV_ITEMS = [
   { label: 'Cara Kerja', href: '#how' },
   { label: 'Tentang', href: '#about' },
   { label: 'FAQ', href: '#faq' },
+  { label: 'Wawasan Data', to: '/insights' },
 ]
 
 export default function Navbar({ onCheckRisk }) {
@@ -45,11 +47,18 @@ export default function Navbar({ onCheckRisk }) {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map((item) => (
-              <a key={item.href} href={item.href} className="btn-ghost">
-                {item.label}
-              </a>
-            ))}
+            {NAV_ITEMS.map((item) =>
+              item.to ? (
+                <Link key={item.to} to={item.to} className="btn-ghost flex items-center gap-1">
+                  <BarChart2 size={14} />
+                  {item.label}
+                </Link>
+              ) : (
+                <a key={item.href} href={item.href} className="btn-ghost">
+                  {item.label}
+                </a>
+              )
+            )}
           </div>
 
           {/* CTA */}
@@ -75,16 +84,28 @@ export default function Navbar({ onCheckRisk }) {
             animate={{ opacity: 1, y: 0 }}
             className="mt-2 md:hidden glass rounded-3xl p-4 flex flex-col gap-1"
           >
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="rounded-2xl px-4 py-2.5 text-sm font-medium hover:bg-pulse-50"
-                onClick={() => setOpen(false)}
-              >
-                {item.label}
-              </a>
-            ))}
+            {NAV_ITEMS.map((item) =>
+              item.to ? (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium hover:bg-pulse-50"
+                  onClick={() => setOpen(false)}
+                >
+                  <BarChart2 size={14} className="text-pulse-600" />
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-2xl px-4 py-2.5 text-sm font-medium hover:bg-pulse-50"
+                  onClick={() => setOpen(false)}
+                >
+                  {item.label}
+                </a>
+              )
+            )}
           </motion.div>
         )}
       </div>

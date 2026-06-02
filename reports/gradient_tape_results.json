@@ -1,0 +1,12 @@
+{
+  "method": "tf.GradientTape custom loop",
+  "architecture": "Dense[256-128-64-1] + BN + Dropout",
+  "epochs_trained": 8,
+  "threshold": 0.23,
+  "train_time_seconds": 81.9,
+  "test_accuracy": 0.6008064969054332,
+  "test_recall": 0.931899641577061,
+  "test_precision": 0.11736088472051559,
+  "test_f1": 0.20846789460789772,
+  "test_roc_auc": 0.8840768009603647
+}

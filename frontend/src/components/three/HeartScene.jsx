@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, Suspense } from 'react'
+import React, { useRef, useMemo, Suspense, Component } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import {
   Float,
@@ -146,61 +146,85 @@ function OrbitParticles({ count = 18 }) {
   )
 }
 
+class WebGLBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { failed: false }
+  }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '2rem',
+            background: 'radial-gradient(ellipse at 40% 40%, #BFDBFE 0%, #EFF6FF 50%, #F0FDFA 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
+            <path
+              d="M80 140 C80 140 20 100 20 55 C20 35 36 18 56 18 C66 18 75 23 80 32 C85 23 94 18 104 18 C124 18 140 35 140 55 C140 100 80 140 80 140Z"
+              fill="url(#hg)"
+              opacity="0.85"
+            />
+            <defs>
+              <linearGradient id="hg" x1="20" y1="18" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#EF4444" />
+                <stop offset="1" stopColor="#B91C1C" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 /**
  * Hero scene — heart + rings + particles + lighting.
  */
 export default function HeartScene() {
   return (
-    <Canvas
-      camera={{ position: [0, 0.4, 5.6], fov: 42 }}
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: true }}
-      style={{ background: 'transparent' }}
-    >
-      <Suspense fallback={null}>
-        {/* Lighting */}
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 5, 5]} intensity={1.2} color="#FFFFFF" />
-        <pointLight position={[-4, 2, 3]} intensity={1.5} color="#3B82F6" />
-        <pointLight position={[4, -2, 3]} intensity={1.2} color="#EF4444" />
+    <WebGLBoundary>
+      <Canvas
+        camera={{ position: [0, 0.4, 5.6], fov: 42 }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
+        style={{ background: 'transparent' }}
+      >
+        <Suspense fallback={null}>
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[5, 5, 5]} intensity={1.2} color="#FFFFFF" />
+          <pointLight position={[-4, 2, 3]} intensity={1.5} color="#3B82F6" />
+          <pointLight position={[4, -2, 3]} intensity={1.2} color="#EF4444" />
 
-        {/* Heart with float animation */}
-        <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.4}>
-          <group position={[0, -0.1, 0]} scale={0.85}>
-            <HeartShape />
-          </group>
-        </Float>
+          <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.4}>
+            <group position={[0, -0.1, 0]} scale={0.85}>
+              <HeartShape />
+            </group>
+          </Float>
 
-        {/* Pulse rings — staggered */}
-        <PulseRing delay={0} color="#3B82F6" />
-        <PulseRing delay={1} color="#60A5FA" />
-        <PulseRing delay={2} color="#10B981" />
+          <PulseRing delay={0} color="#3B82F6" />
+          <PulseRing delay={1} color="#60A5FA" />
+          <PulseRing delay={2} color="#10B981" />
 
-        {/* Orbit data points */}
-        <OrbitParticles count={20} />
+          <OrbitParticles count={20} />
 
-        {/* Ambient sparkles */}
-        <Sparkles
-          count={60}
-          scale={6}
-          size={2}
-          speed={0.4}
-          opacity={0.6}
-          color="#93C5FD"
-        />
+          <Sparkles count={60} scale={6} size={2} speed={0.4} opacity={0.6} color="#93C5FD" />
 
-        {/* Soft shadow */}
-        <ContactShadows
-          position={[0, -2.2, 0]}
-          opacity={0.25}
-          scale={6}
-          blur={2.5}
-          far={3}
-          color="#1E3A8A"
-        />
+          <ContactShadows position={[0, -2.2, 0]} opacity={0.25} scale={6} blur={2.5} far={3} color="#1E3A8A" />
 
-        <Environment preset="city" />
-      </Suspense>
-    </Canvas>
+          <Environment preset="city" />
+        </Suspense>
+      </Canvas>
+    </WebGLBoundary>
   )
 }

@@ -20,6 +20,7 @@ st.set_page_config(
 
 BASE_DIR = Path(__file__).parent.parent
 DATA_PATH = BASE_DIR / "data" / "final" / "dataset_final.csv"
+SAMPLE_PATH = Path(__file__).parent / "data" / "dataset_sample.csv"
 
 RISK_COLOR = "#e74c3c"
 SAFE_COLOR = "#2ecc71"
@@ -27,7 +28,12 @@ SAFE_COLOR = "#2ecc71"
 # ── Data loading ─────────────────────────────────────────────────
 @st.cache_data
 def load_data():
-    df = pd.read_csv(DATA_PATH)
+    if DATA_PATH.exists():
+        return pd.read_csv(DATA_PATH)
+    # Fallback ke sample 10% untuk Streamlit Cloud
+    df = pd.read_csv(SAMPLE_PATH)
+    st.info("ℹ️ Menampilkan sample 10% dari dataset (44.5K dari 445K baris). "
+            "Data lengkap tersedia di lingkungan lokal.", icon="📊")
     return df
 
 df = load_data()
