@@ -36,7 +36,7 @@ const INDONESIA_STATS = [
   {
     value: 'Rp 30–150 jt',
     unit: 'per episode',
-    label: 'biaya perawatan CVD — 10–50× lebih mahal dari pencegahan',
+    label: 'biaya perawatan CVD; 10-50x lebih mahal dari pencegahan',
     source: 'BPJS 2022',
     color: 'amber',
   },
@@ -60,7 +60,7 @@ const CLINICAL_FACTORS = [
   {
     label: 'Angina Pektoris (Nyeri Dada)',
     rank: 'SHAP #4',
-    desc: 'Nyeri dada saat aktivitas fisik adalah tanda khas penyakit arteri koroner. SHAP importance #4 membuktikan ini adalah predictor kuat — tapi tidak kami tanyakan karena membutuhkan diagnosis dokter.',
+    desc: 'Nyeri dada saat aktivitas fisik adalah tanda khas penyakit arteri koroner. SHAP importance #4 membuktikan ini adalah prediktor kuat, namun tidak kami tanyakan karena membutuhkan diagnosis dokter.',
     action: 'Jika pernah mengalami nyeri dada saat aktivitas, segera konsultasikan ke dokter jantung.',
     icon: HeartPulse,
   },
@@ -88,7 +88,7 @@ const CLINICAL_FACTORS = [
   {
     label: 'Kesehatan Gigi & Mulut',
     rank: 'SHAP #2',
-    desc: 'Mengejutkan — SHAP importance #2 (0.080). Riset AHA menunjukkan bakteri periodontal memicu inflamasi arteri koroner. Gigi yang tidak sehat adalah proxy kesehatan sistemik secara keseluruhan.',
+    desc: 'Mengejutkan: SHAP importance #2 (0.080). Riset AHA menunjukkan bakteri periodontal memicu inflamasi arteri koroner. Gigi yang tidak sehat adalah proxy kesehatan sistemik secara keseluruhan.',
     action: 'Perawatan gigi rutin (scaling & pemeriksaan 6 bulan sekali) adalah bagian dari kesehatan jantung.',
     icon: TrendingUp,
   },
@@ -104,7 +104,7 @@ function SHAPTooltip({ active, payload }) {
       <p className="font-bold text-ink-900 mb-1">{item.name}</p>
       <p className="text-pulse-700 font-mono">SHAP: {item.shap.toFixed(4)}</p>
       <p className={`mt-1 ${item.inForm ? 'text-mint-700' : 'text-slate-500'}`}>
-        {item.inForm ? '✓ Ada di form screening' : '— Tidak di form (perlu dokter)'}
+        {item.inForm ? '✓ Ada di form screening' : 'Tidak di form (perlu dokter)'}
       </p>
     </div>
   )
@@ -158,7 +158,7 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
           </h1>
           <p className="mx-auto max-w-2xl text-ink-900/70 leading-relaxed">
             Data & insight dari CDC BRFSS 2022 (445.132 responden) dan analisis SHAP model Pulsevera.
-            Pahami faktor apa yang paling berpengaruh — dan mengapa deteksi dini itu penting.
+            Pahami faktor apa yang paling berpengaruh, serta mengapa deteksi dini itu penting.
           </p>
         </motion.div>
 
@@ -175,7 +175,7 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
               </span>
               <div>
                 <h2 className="font-display text-2xl font-bold">Skala Masalah di Indonesia</h2>
-                <p className="text-sm text-ink-900/60">Penyakit jantung adalah pembunuh #1 — dan sebagian besar dapat dicegah</p>
+                <p className="text-sm text-ink-900/60">Penyakit jantung adalah pembunuh #1, dan sebagian besar dapat dicegah</p>
               </div>
             </div>
 
@@ -199,7 +199,7 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
             <div className="mt-5 rounded-2xl bg-white/80 p-4 ring-1 ring-pulse-100 flex gap-3 items-start">
               <Info size={18} className="text-pulse-600 shrink-0 mt-0.5" />
               <p className="text-sm text-ink-900/80 leading-relaxed">
-                <strong>Fakta penting:</strong> Penyakit jantung sangat <em>preventable</em> — 80%
+                <strong>Fakta penting:</strong> Penyakit jantung sangat <em>preventable</em>: 80%
                 kematian CVD prematur dapat dicegah dengan gaya hidup sehat dan deteksi dini.
                 Namun mayoritas orang tidak menyadari risikonya sampai sudah terlambat.
               </p>
@@ -233,7 +233,7 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-sm bg-slate-400" />
-                  <span className="text-ink-900/80">Tidak di form — perlu konsultasi dokter</span>
+                  <span className="text-ink-900/80">Tidak di form (konsultasi dokter)</span>
                 </div>
               </div>
 
@@ -272,8 +272,8 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
               </ResponsiveContainer>
 
               <p className="mt-4 text-xs text-ink-900/50 leading-relaxed">
-                * <strong>Skor Gaya Hidup</strong> adalah fitur engineered oleh tim DS Pulsevera —
-                masuk top-20 SHAP (0.011) membuktikan feature engineering menambah nilai prediktif.
+                * <strong>Skor Gaya Hidup</strong> adalah fitur engineered oleh tim DS Pulsevera.
+                Masuk top-20 SHAP (0.011), membuktikan feature engineering menambah nilai prediktif.
                 <br />
                 SHAP (SHapley Additive exPlanations) mengukur kontribusi rata-rata setiap fitur
                 terhadap output prediksi model, dihitung pada 200 sampel representatif.
@@ -295,7 +295,7 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
               </span>
               <div>
                 <h2 className="font-display text-2xl font-bold">Faktor yang Tidak Kami Tanyakan</h2>
-                <p className="text-sm text-ink-900/60">Ada di dataset, tapi membutuhkan diagnosis dokter — bukan pengetahuan awam</p>
+                <p className="text-sm text-ink-900/60">Ada di dataset, tapi membutuhkan diagnosis dokter, bukan pengetahuan awam</p>
               </div>
             </div>
             <p className="mb-6 text-sm text-ink-900/70 leading-relaxed ml-[52px]">

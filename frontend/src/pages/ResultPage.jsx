@@ -65,7 +65,7 @@ const LIFESTYLE_GRADE_META = {
   'Perlu Perhatian': {
     color: 'coral',
     title: 'Saatnya perbaiki kebiasaan harian.',
-    desc: 'Beberapa kebiasaan Anda dapat meningkatkan risiko penyakit jantung di masa depan. Mulai dengan satu perubahan kecil hari ini — efeknya kumulatif untuk jangka panjang.',
+    desc: 'Beberapa kebiasaan Anda dapat meningkatkan risiko penyakit jantung di masa depan. Mulai dengan satu perubahan kecil hari ini, karena efeknya kumulatif untuk jangka panjang.',
   },
   Berisiko: {
     color: 'coral',
@@ -294,12 +294,12 @@ export default function ResultPage({ result, formData, onBack, onRetake }) {
                 Estimasi Risiko Serangan Jantung
               </h2>
               <p className="text-ink-900/70 text-sm leading-relaxed">
-                {riskMeta.icon} <strong>{risk_label}</strong> — {riskMeta.desc}
+                {riskMeta.icon} <strong>{risk_label}</strong>. {riskMeta.desc}
               </p>
               <p className="text-xs text-ink-900/50 mt-3 italic">
                 Catatan: estimasi ini berdasarkan pola statistik populasi CDC BRFSS 2022.
-                Risiko bisa tampak rendah untuk usia muda meski gaya hidup kurang sehat —
-                karena itu fokus utama analisis ini adalah <strong>Skor Gaya Hidup</strong> di atas.
+                Risiko bisa tampak rendah untuk usia muda meski gaya hidup kurang sehat.
+                Karena itu, fokus utama analisis ini adalah <strong>Skor Gaya Hidup</strong> di atas.
               </p>
             </div>
             <div className="flex justify-center">

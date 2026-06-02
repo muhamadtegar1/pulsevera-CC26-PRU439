@@ -570,7 +570,7 @@ const FIELD_CONFIG = {
   alcohol: {
     label: 'Apakah Anda mengonsumsi alkohol dalam 30 hari terakhir?',
     icon: Wine,
-    helpText: 'Termasuk bir, anggur, atau minuman beralkohol lainnya — baik sesekali maupun rutin.',
+    helpText: 'Termasuk bir, anggur, atau minuman beralkohol lainnya, baik sesekali maupun rutin.',
     component: RadioCards,
     props: {
       options: [
@@ -582,7 +582,7 @@ const FIELD_CONFIG = {
   general_health: {
     label: 'Bagaimana Anda menilai kondisi kesehatan Anda secara umum?',
     icon: HeartPulse,
-    helpText: 'Self-assessment sederhana — pilih yang paling mendekati perasaan Anda tentang kesehatan saat ini.',
+    helpText: 'Pilih kondisi yang paling mendekati perasaan Anda tentang kesehatan secara keseluruhan.',
     component: RadioCards,
     props: { options: HEALTH_OPTIONS },
   },

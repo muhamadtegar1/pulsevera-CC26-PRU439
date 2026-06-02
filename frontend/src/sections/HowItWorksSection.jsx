@@ -7,7 +7,7 @@ const STEPS = [
     n: '01',
     icon: FormInput,
     title: 'Isi 10 pertanyaan',
-    desc: 'Jenis kelamin, usia, BMI, jam tidur, status merokok, riwayat diabetes — kurang dari 1 menit.',
+    desc: 'Jenis kelamin, usia, BMI, jam tidur, status merokok, dan riwayat diabetes. Selesai kurang dari 1 menit.',
   },
   {
     n: '02',

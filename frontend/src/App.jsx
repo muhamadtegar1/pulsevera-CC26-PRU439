@@ -29,7 +29,7 @@ class ErrorBoundary extends React.Component {
     if (this.state.error) {
       return (
         <div style={{ padding: 32, fontFamily: 'monospace', background: '#fee2e2', minHeight: '100vh' }}>
-          <h2 style={{ color: '#dc2626' }}>Runtime Error — buka DevTools (F12) untuk detail</h2>
+          <h2 style={{ color: '#dc2626' }}>Runtime Error: buka DevTools (F12) untuk detail</h2>
           <pre style={{ whiteSpace: 'pre-wrap', color: '#7f1d1d', marginTop: 16 }}>
             {this.state.error.toString()}
           </pre>

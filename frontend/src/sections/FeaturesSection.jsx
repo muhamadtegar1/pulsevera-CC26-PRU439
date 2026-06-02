@@ -14,14 +14,14 @@ const FEATURES = [
   {
     icon: Brain,
     title: 'Explainable AI',
-    desc: 'Setiap prediksi disertai 3 faktor risiko teratas berdasarkan SHAP — Anda tahu kenapa, bukan hanya hasil.',
+    desc: 'Setiap prediksi disertai 3 faktor risiko teratas berdasarkan SHAP, sehingga Anda tahu kenapa, bukan hanya hasil.',
     accent: '#3B82F6',
     badge: 'SHAP',
   },
   {
     icon: Activity,
     title: 'Smart Recommendation',
-    desc: 'Rekomendasi gaya hidup personal: pola tidur, olahraga, dan diet — disesuaikan dengan profil Anda.',
+    desc: 'Rekomendasi gaya hidup personal: pola tidur, olahraga, dan diet, disesuaikan dengan profil Anda.',
     accent: '#10B981',
     badge: 'Personal',
   },
@@ -38,7 +38,7 @@ export default function FeaturesSection({ onCheckRisk }) {
               Apa yang Anda dapat
             </span>
             <h2 className="h-section text-balance">
-              Bukan sekadar prediksi — <span className="text-gradient">deteksi dini</span> yang bisa Anda pahami.
+              Bukan sekadar prediksi, melainkan <span className="text-gradient">deteksi dini</span> yang bisa Anda pahami.
             </h2>
           </div>
           <button onClick={onCheckRisk} className="btn-secondary self-start sm:self-end">
@@ -76,9 +76,6 @@ export default function FeaturesSection({ onCheckRisk }) {
                 <h3 className="font-display text-xl font-bold mb-2">{f.title}</h3>
                 <p className="text-sm text-ink-900/70 leading-relaxed">{f.desc}</p>
 
-                <div className="mt-6 flex items-center text-pulse-700 text-sm font-semibold opacity-0 group-hover:opacity-100 transition">
-                  Pelajari lebih lanjut <ArrowUpRight size={14} className="ml-1" />
-                </div>
               </div>
             </motion.div>
           ))}

@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: 'Apakah data saya disimpan?',
-    a: 'Tidak. Pulsevera berjalan stateless — input Anda diproses real-time dan tidak disimpan di database mana pun.',
+    a: 'Tidak. Pulsevera berjalan stateless: input Anda diproses real-time dan tidak disimpan di database mana pun.',
   },
   {
     q: 'Apa itu SHAP dan kenapa penting?',

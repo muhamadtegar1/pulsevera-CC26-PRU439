@@ -41,7 +41,7 @@ export default function HeroSection({ onCheckRisk }) {
 
               <p className="mt-6 max-w-xl text-base sm:text-lg text-ink-900/70 text-balance">
                 Cek seberapa sehat gaya hidup Anda untuk kesehatan jantung jangka panjang.
-                Pulsevera menganalisis <strong>10 kebiasaan harian</strong> Anda dalam 15 detik —
+                Pulsevera menganalisis <strong>10 kebiasaan harian</strong> Anda dalam 15 detik,
                 didukung machine learning dengan penjelasan transparan via SHAP.
               </p>
 
