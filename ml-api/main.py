@@ -476,11 +476,16 @@ def compute_lifestyle_score(user_input: dict[str, Any]) -> LifestyleScore:
 
 
 def _predict_core(user_input: UserInput, prefer: str) -> PredictionResult:
+    # Fallback: bila ML model tidak tersedia (mis. deployment tanpa pkl besar),
+    # otomatis gunakan DL model. Berguna di Hugging Face Spaces / cloud deployment.
     if prefer == 'ml' and inference.bundle.ml_model is None:
-        raise HTTPException(
-            status_code=503,
-            detail='Model ML belum dilatih. Jalankan `python train.py` di folder ml-api/.',
-        )
+        if inference.bundle.dl_model is not None:
+            prefer = 'dl'
+        else:
+            raise HTTPException(
+                status_code=503,
+                detail='Model ML belum dilatih. Jalankan `python train.py` di folder ml-api/.',
+            )
     if prefer == 'dl' and inference.bundle.dl_model is None:
         raise HTTPException(
             status_code=503,
