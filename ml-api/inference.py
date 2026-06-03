@@ -116,6 +116,7 @@ class ModelBundle:
                     dl_path,
                     custom_objects={'focal_loss': focal_loss},
                     safe_mode=False,
+                    compile=False, 
                 )
                 logger.info('DL model loaded: %s', dl_path.name)
             except Exception as exc:
