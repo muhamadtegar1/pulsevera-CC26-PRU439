@@ -254,8 +254,8 @@ export default function InsightsPage({ onBack, onCheckRisk }) {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={175}
-                    tick={{ fontSize: 11.5 }}
+                    width={130}
+                    tick={{ fontSize: 10.5 }}
                     tickLine={false}
                     axisLine={false}
                   />

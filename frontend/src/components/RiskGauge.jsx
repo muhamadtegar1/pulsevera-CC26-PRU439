@@ -20,9 +20,9 @@ export default function RiskGauge({ score, label, percent }) {
   const offset = circumference * (1 - filled)
 
   return (
-    <div className="flex flex-col items-center">
-      <div className={`relative ${colorCfg.glow} rounded-full`}>
-        <svg width={280} height={170} viewBox="0 0 280 170">
+    <div className="flex flex-col items-center w-full max-w-[280px] mx-auto">
+      <div className={`relative w-full ${colorCfg.glow} rounded-full`}>
+        <svg width="100%" height="auto" viewBox="0 0 280 170">
           {/* Track */}
           <path
             d={`M 30 150 A ${radius} ${radius} 0 0 1 250 150`}
