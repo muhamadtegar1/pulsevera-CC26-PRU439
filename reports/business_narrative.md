@@ -126,15 +126,19 @@ Pulsevera berbeda dari health chatbot generik karena:
 
 ## 8. Positioning & Roadmap
 
-### Saat Ini (MVP)
+### Saat Ini (MVP — Live)
 - Single-page app: screening → hasil → rekomendasi
 - Tidak menyimpan data user (privasi by design)
-- Deployed local + planned deployment ke Vercel/Railway/HF Spaces
+- **Sudah live di production:**
+  - Frontend: https://pulsevera.vercel.app
+  - ML API: https://tgrrr-pulsevera-ml-api.hf.space
+  - Backend: https://tgrrr-pulsevera-backend.hf.space
+  - Source: https://github.com/muhamadtegar1/pulsevera-CC26-PRU439
 
 ### Short-term (3–6 bulan setelah capstone)
-- Integrasi Gemini AI (rekomendasi yang lebih personal)
 - History tracking (opsional, dengan consent)
 - Halaman edukasi/news tentang CVD
+- Dataset Indonesia untuk fine-tuning model
 
 ### Long-term Vision
 - API untuk integrasi dengan sistem FKTP (Fasilitas Kesehatan Tingkat Pertama)
