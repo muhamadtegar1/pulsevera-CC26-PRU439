@@ -9,3 +9,5 @@ models/*.bak
 models/pulsevera_savedmodel/
 *.h5
 logs/
+.coverage
+.pytest_cache/
